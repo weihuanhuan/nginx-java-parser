@@ -91,6 +91,46 @@ public interface NginxListener extends ParseTreeListener {
 	 */
 	void exitIf_body(NginxParser.If_bodyContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link NginxParser#lua_block}.
+	 * @param ctx the parse tree
+	 */
+	void enterLua_block(NginxParser.Lua_blockContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link NginxParser#lua_block}.
+	 * @param ctx the parse tree
+	 */
+	void exitLua_block(NginxParser.Lua_blockContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link NginxParser#lua_res}.
+	 * @param ctx the parse tree
+	 */
+	void enterLua_res(NginxParser.Lua_resContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link NginxParser#lua_res}.
+	 * @param ctx the parse tree
+	 */
+	void exitLua_res(NginxParser.Lua_resContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link NginxParser#lua_code}.
+	 * @param ctx the parse tree
+	 */
+	void enterLua_code(NginxParser.Lua_codeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link NginxParser#lua_code}.
+	 * @param ctx the parse tree
+	 */
+	void exitLua_code(NginxParser.Lua_codeContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link NginxParser#lua_content}.
+	 * @param ctx the parse tree
+	 */
+	void enterLua_content(NginxParser.Lua_contentContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link NginxParser#lua_content}.
+	 * @param ctx the parse tree
+	 */
+	void exitLua_content(NginxParser.Lua_contentContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link NginxParser#regexp}.
 	 * @param ctx the parse tree
 	 */

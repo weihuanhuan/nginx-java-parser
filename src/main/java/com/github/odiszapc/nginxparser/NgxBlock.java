@@ -93,6 +93,20 @@ public class NgxBlock extends NgxAbstractEntry implements Iterable<NgxEntry> {
         return (NgxBlock) entry;
     }
 
+    public NgxBlock findIfBlock(String... params) {
+        NgxEntry entry = find(NgxConfig.IF, params);
+        if (null == entry)
+            return null;
+        return (NgxBlock) entry;
+    }
+
+    public NgxBlock findLuaBlock(String... params) {
+        NgxEntry entry = find(NgxConfig.LUA, params);
+        if (null == entry)
+            return null;
+        return (NgxBlock) entry;
+    }
+
     public NgxParam findParam(String... params) {
         NgxEntry entry = find(NgxConfig.PARAM, params);
         if (null == entry)
@@ -124,13 +138,15 @@ public class NgxBlock extends NgxAbstractEntry implements Iterable<NgxEntry> {
                     break;
 
                 case BLOCK:
+                case LUA:
+                case IF:
                     NgxBlock block = (NgxBlock) entry;
                     if (tail.length > 0) {
                         if (block.getName().equals(head)) {
                             res.addAll(block.findAll(clazz, result, tail));
                         }
                     } else {
-                        if (block.getName().equals(head) && (clazz.equals(NgxBlock.class))) {
+                        if (block.getName().equals(head) && (block.getClass().equals(clazz))) {
                             res.add(block);
                         }
                     }

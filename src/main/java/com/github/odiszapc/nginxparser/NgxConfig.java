@@ -40,6 +40,7 @@ public class NgxConfig extends NgxBlock {
     public static final Class<? extends NgxEntry> COMMENT = NgxComment.class;
     public static final Class<? extends NgxEntry> BLOCK = NgxBlock.class;
     public static final Class<? extends NgxEntry> IF = NgxIfBlock.class;
+    public static final Class<? extends NgxEntry> LUA = NgxLuaBlock.class;
 
     /**
      * Parse an existing config

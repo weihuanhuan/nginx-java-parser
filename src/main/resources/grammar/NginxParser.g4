@@ -1,16 +1,12 @@
-grammar Nginx;
+parser grammar NginxParser;
 
 @parser::header {
     package com.github.odiszapc.nginxparser.antlr;
     import com.github.odiszapc.nginxparser.*;
 }
 
-@lexer::header {
-    package com.github.odiszapc.nginxparser.antlr;
-}
-
 options {
-  superClass = NginxBaseParser;
+    tokenVocab=NginxLexer;
 }
 
 config returns [NgxConfig ret]
@@ -32,7 +28,7 @@ statement returns [NgxParam ret]
   |
   regexHeaderStatement { $ret = $regexHeaderStatement.ret; }
 )
-';';
+SEMI;
 
 genericStatement returns [NgxParam ret]
 @init { $ret = new NgxParam(); }
@@ -63,7 +59,7 @@ block returns [NgxBlock ret]
     genericBlockHeader  { $ret.getTokens().addAll($genericBlockHeader.ret); }
   )
   Comment?
-  '{'
+  LBRACE
   (
     statement { $ret.addEntry($statement.ret); }
     |
@@ -75,7 +71,7 @@ block returns [NgxBlock ret]
     |
     Comment { $ret.addEntry(new NgxComment($Comment.text)); }
   )*
-  '}'
+  RBRACE
   ;
 
 genericBlockHeader returns [List<NgxToken> ret]
@@ -91,18 +87,18 @@ genericBlockHeader returns [List<NgxToken> ret]
 if_statement returns [NgxIfBlock ret]
 @init { $ret = new NgxIfBlock(); }
   :
-  id='if' { $ret.addValue(new NgxToken($id.text)); }
+  id=IF { $ret.addValue(new NgxToken($id.text)); }
   if_body { $ret.getTokens().addAll($if_body.ret); }
   Comment?
-  '{'
+  LBRACE
     (statement { $ret.addEntry($statement.ret); } )*
-  '}'
+  RBRACE
   ;
 
 if_body  returns [List<NgxToken> ret]
 @init { $ret = new ArrayList<NgxToken>(); }
   :
-  '('
+  LPAREN
   Value  { $ret.add(new NgxToken($Value.text)); }
   (Value { $ret.add(new NgxToken($Value.text)); })?
   (
@@ -110,18 +106,17 @@ if_body  returns [List<NgxToken> ret]
     |
     regexp { $ret.add(new NgxToken($regexp.ret)); }
   )?
-  ')'
+  RPAREN
   ;
 
 lua_block returns [NgxLuaBlock ret]
 @init { $ret = new NgxLuaBlock(); }
   :
-  id=LuaBlockID_Regex { $ret.addValue(new NgxToken($id.text)); }
-  (res=lua_res { $ret.addValue(new NgxToken($res.text)); })?
-   Comment?
-  '{'
-    (code=lua_code { $ret.addEntry($code.ret); })?
-  '}'
+  id=INIT_WORKER_BY_LUA_BLOCK { $ret.addValue(new NgxToken($id.text)); }
+  (res=lua_res { $ret.addValue(new NgxToken($res.text)); })*
+  LBRACE
+    ( body=lua_code { $ret.addEntry($body.ret); } )*
+  RBRACE
   ;
 
 lua_res returns [String ret]
@@ -130,32 +125,29 @@ lua_res returns [String ret]
  (Value { $ret = $Value.text; }
   |
   r=regexp { $ret = $r.ret; }
- )+
+ )
  ;
 
 lua_code returns [NgxLuaCode ret]
 @init { $ret = new NgxLuaCode(); }
-@after { $ret.addValue(getFullContext($content.text)); }
  :
-  content=lua_content
+  line=lua_line { $ret.addValue($line.text); }
  ;
-
-lua_content: .+? ;
 
 regexp returns [String ret]
 @init { $ret = ""; }
 :
 (
-  id='\\.' { $ret += $id.text; }
-  | id='^' { $ret += $id.text; }
+  id=REG_DOT { $ret += $id.text; }
+  | id=CARET { $ret += $id.text; }
   | Value { $ret += $Value.text; }
-  | '(' r=regexp { $ret += "(".concat($r.ret).concat(")"); } ')'
+  | LPAREN r=regexp { $ret += "(".concat($r.ret).concat(")"); } RPAREN
 )+;
 
 locationBlockHeader returns [List<NgxToken> ret]
 @init { $ret = new ArrayList<NgxToken>(); }
   :
-  id='location' { $ret.add(new NgxToken($id.text)); }
+  id=LOCATION { $ret.add(new NgxToken($id.text)); }
   (Value { $ret.add(new NgxToken($Value.text)); })?
   (
     Value { $ret.add(new NgxToken($Value.text)); }
@@ -167,58 +159,12 @@ locationBlockHeader returns [List<NgxToken> ret]
 rewriteStatement returns [NgxParam ret]
 @init { $ret = new NgxParam(); }
   :
-  id='rewrite' { $ret.addValue($id.text); }
+  id=REWRITE { $ret.addValue($id.text); }
   (Value { $ret.addValue($Value.text); } | regexp { $ret.addValue($regexp.ret); }) Value { $ret.addValue($Value.text); }
-  (opt=('last' | 'break' | 'redirect' | 'permanent') { $ret.addValue($opt.text); })?
+  (opt=(LAST | BREAK | REDIRECT | PERMANENT) { $ret.addValue($opt.text); })?
   ;
 
-//QUOTED_STRING
-//: '"' (~('"' | '\\' | '\r' | '\n') | '\\' ('"' | '\\'))* '"';
-
-LuaBlockID_Regex
-    :
-    Lua_Block_Regex Lua_Block_Suffix
-    ;
-
-fragment Lua_Block_Regex : [a-zA-Z0-9_]+;
-
-fragment Lua_Block_Suffix : '_by_lua_block';
-
-Value: STR_EXT | QUOTED_STRING | SINGLE_QUOTED
-;
-
-STR_EXT
-  :
-  ([a-zA-Z0-9_/\.,\-:=~+!?$&^*\[\]@|#] | NON_ASCII)+;
-
-Comment
-    :
-    '#' ~[\r\n]*;
-
-REGEXP_PREFIXED
-  : (RegexpPrefix)[a-zA-Z0-9_/\.,\-:=~+!?$&^*\[\]@|#)(]+
-  ;
-
-QUOTED_STRING
-  :
-  '"' StringCharacters? '"'
-  ;
-
-fragment RegexpPrefix : [~][*]?;
-
-fragment StringCharacters : (~["\\] | EscapeSequence)+;
-
-fragment NON_ASCII :  '\u0080'..'\uFFFF';
-
-fragment
-EscapeSequence
-    :   '\\' [btnfr"'\\]?
-    ;
-
-SINGLE_QUOTED
-:
-'\'' ~['\\]* '\'';
-
-WS
-:
-[ \t\n\r]+ ->  channel(HIDDEN) ;
+lua_line
+     :
+    CODE_LINE
+     ;

@@ -20,4 +20,9 @@ public class NginxListenerImpl extends NginxBaseListener {
     public void enterConfig(@NotNull NginxParser.ConfigContext ctx) {
         result = ctx.ret;
     }
+
+    @Override
+    public void exitLua_content(NginxParser.Lua_contentContext ctx) {
+        super.exitLua_content(ctx);
+    }
 }

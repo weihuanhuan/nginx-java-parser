@@ -18,16 +18,27 @@ public class NgxPrintWriter implements AutoCloseable {
     }
 
     public NgxPrintWriter openBlock(String prefix) {
+        return openBlock(prefix,true);
+    }
+
+    public NgxPrintWriter openBlock(String prefix, boolean newline) {
         append(prefix);
         printWriter.append(" ").append(LBRACE);
         level += 1;
 
-        return newLine();
+        if (newline) {
+            newLine();
+        }
+        return this;
     }
 
     public NgxPrintWriter closeBlock() {
+        return closeBlock(true);
+    }
+
+    public NgxPrintWriter closeBlock(boolean appendOffset) {
         level -= 1;
-        append(RBRACE);
+        append(RBRACE, appendOffset);
 
         return newLine();
     }
@@ -39,9 +50,15 @@ public class NgxPrintWriter implements AutoCloseable {
     }
 
     public NgxPrintWriter append(String string) {
-        this.printWriter.append(constructOffset(level))
-                .append(string);
+        return append(string, true);
+    }
 
+    public NgxPrintWriter append(String string, boolean appendOffset) {
+        if (appendOffset) {
+            this.printWriter.append(constructOffset(level));
+        }
+
+        this.printWriter.append(string);
         return this;
     }
 

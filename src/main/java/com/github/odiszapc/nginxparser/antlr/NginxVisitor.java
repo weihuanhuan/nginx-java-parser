@@ -62,6 +62,30 @@ public interface NginxVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitIf_body(NginxParser.If_bodyContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link NginxParser#lua_block}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLua_block(NginxParser.Lua_blockContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link NginxParser#lua_res}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLua_res(NginxParser.Lua_resContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link NginxParser#lua_code}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLua_code(NginxParser.Lua_codeContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link NginxParser#lua_content}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitLua_content(NginxParser.Lua_contentContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link NginxParser#regexp}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
