@@ -1,12 +1,20 @@
 grammar Nginx;
 
 @parser::header {
-    package com.github.odiszapc.nginxparser.antlr;
-    import com.github.odiszapc.nginxparser.*;
+/**
+ * Here you can add header information to the generated source file.
+ */
+
+package com.github.odiszapc.nginxparser.antlr;
+import com.github.odiszapc.nginxparser.*;
 }
 
 @lexer::header {
-    package com.github.odiszapc.nginxparser.antlr;
+/**
+ * The order of Comment token affects parsing
+ */
+
+package com.github.odiszapc.nginxparser.antlr;
 }
 
 options {
@@ -62,7 +70,7 @@ block returns [NgxBlock ret]
     |
     genericBlockHeader  { $ret.getTokens().addAll($genericBlockHeader.ret); }
   )
-  Comment?
+  (Comment { $ret.addEntry(new NgxComment($Comment.text)); })*
   '{'
   (
     statement { $ret.addEntry($statement.ret); }
@@ -93,9 +101,13 @@ if_statement returns [NgxIfBlock ret]
   :
   id='if' { $ret.addValue(new NgxToken($id.text)); }
   if_body { $ret.getTokens().addAll($if_body.ret); }
-  Comment?
+  (Comment { $ret.addEntry(new NgxComment($Comment.text)); })*
   '{'
-    (statement { $ret.addEntry($statement.ret); } )*
+     (
+       Comment { $ret.addEntry(new NgxComment($Comment.text)); }
+       |
+       statement { $ret.addEntry($statement.ret); }
+     )*
   '}'
   ;
 
@@ -118,7 +130,7 @@ lua_block returns [NgxLuaBlock ret]
   :
   id=LuaBlockID_Regex { $ret.addValue(new NgxToken($id.text)); }
   (res=lua_res { $ret.addValue(new NgxToken($res.text)); })?
-   Comment?
+  (Comment { $ret.addEntry(new NgxComment($Comment.text)); })*
   '{'
     (code=lua_code { $ret.addEntry($code.ret); })?
   '}'
@@ -184,16 +196,16 @@ fragment Lua_Block_Regex : [a-zA-Z0-9_]+;
 
 fragment Lua_Block_Suffix : '_by_lua_block';
 
+Comment
+    :
+    '#' ~[\r\n]*;
+
 Value: STR_EXT | QUOTED_STRING | SINGLE_QUOTED
 ;
 
 STR_EXT
   :
   ([a-zA-Z0-9_/\.,\-:=~+!?$&^*\[\]@|#] | NON_ASCII)+;
-
-Comment
-    :
-    '#' ~[\r\n]*;
 
 REGEXP_PREFIXED
   : (RegexpPrefix)[a-zA-Z0-9_/\.,\-:=~+!?$&^*\[\]@|#)(]+

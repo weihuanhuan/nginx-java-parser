@@ -73,7 +73,7 @@ public class NginxBaseParser extends Parser {
     }
 
     private String combineToken2String(List<Token> tokenList) {
-        if (tokenList.isEmpty()) {
+        if (tokenList == null || tokenList.isEmpty()) {
             return EMPTY_STRING;
         }
 

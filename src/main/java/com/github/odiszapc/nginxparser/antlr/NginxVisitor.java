@@ -1,7 +1,11 @@
 // Generated from Nginx.g4 by ANTLR 4.5.3
 
-    package com.github.odiszapc.nginxparser.antlr;
-    import com.github.odiszapc.nginxparser.*;
+/**
+ * Here you can add header information to the generated source file.
+ */
+
+package com.github.odiszapc.nginxparser.antlr;
+import com.github.odiszapc.nginxparser.*;
 
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
